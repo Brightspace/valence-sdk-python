@@ -17,7 +17,8 @@
 
 """
 :module: d2lvalence.auth
-:synopsis: Provides auth assistance for Desire2Learn's Valence API client applications.
+:synopsis: Provides auth assistance for Desire2Learn's Valence API client
+           applications.
 """
 
 ### Authentication ###
@@ -33,6 +34,7 @@ import urllib.parse
 import time
 from requests.auth import AuthBase
 
+
 # factory functions
 def fashion_app_context(app_id='', app_key=''):
     """Build a new application context using a default D2LSigner.
@@ -43,16 +45,21 @@ def fashion_app_context(app_id='', app_key=''):
     s = D2LSigner()
     return D2LAppContext(app_id=app_id, app_key=app_key, signer=s)
 
-def fashion_user_context(app_id='', app_key='', d2l_user_context_props_dict={}):
+
+def fashion_user_context(app_id='',
+                         app_key='',
+                         d2l_user_context_props_dict={}):
     """Re-build a user context using a default D2L Signer.
 
     :param app_id: D2L-provided Application ID string.
     :param app_key: D2L-provided Application Key string, used for signing.
-    :param d2l_user_context_props_dict: Context properties dictionary saved from
-    a previous user context instance.
+    :param d2l_user_context_props_dict: Context properties dictionary saved
+           from a previous user context instance.
     """
     ac = fashion_app_context(app_id=app_id, app_key=app_key)
-    return ac.create_user_context(d2l_user_context_props_dict=d2l_user_context_props_dict)
+    return ac.create_user_context(
+        d2l_user_context_props_dict=d2l_user_context_props_dict)
+
 
 # classes
 class D2LSigner(object):
@@ -82,11 +89,11 @@ class D2LSigner(object):
         :returns: URL-safe, base64 encoded result of the signing operation
         suitable for adding to a server request.
         """
-        k,b = key_string.encode('utf-8'), base_string.encode('utf-8')
+        k, b = key_string.encode('utf-8'), base_string.encode('utf-8')
 
-        h256 = hmac.new(k,b,hashlib.sha256)
+        h256 = hmac.new(k, b, hashlib.sha256)
         d = base64.urlsafe_b64encode(h256.digest())
-        result = d.decode('utf-8').replace('=','').strip()
+        result = d.decode('utf-8').replace('=', '').strip()
 
         return result
 
@@ -96,6 +103,7 @@ class D2LSigner(object):
         """
         verify = self.get_hash(key_string, base_string)
         return verify == hash_string
+
 
 class D2LAuthResult:
     """Enumeration of result situations that `D2LUserContext` instances can
@@ -111,8 +119,9 @@ class D2LAppContext(object):
     # route for requesting a user token
     AUTH_API = '/d2l/auth/api/token'
 
-    # Constants for use by inheriting D2LAppContext classes, used to help keep track of
-    # of the query parameter names send back by the back-end in the authenticated redirect url
+    # Constants for use by inheriting D2LAppContext classes, used to help keep
+    # track of of the query parameter names send back by the back-end in the
+    # authenticated redirect url
     CALLBACK_URL = 'x_target'
     CALLBACK_USER_ID = 'x_a'
     CALLBACK_USER_KEY = 'x_b'
@@ -148,7 +157,7 @@ class D2LAppContext(object):
         if '' in (app_id, app_key):
             raise ValueError('app_id and app_key must have values.')
         else:
-            self.app_id , self.app_key = app_id, app_key
+            self.app_id, self.app_key = app_id, app_key
 
         if not isinstance(signer, D2LSigner):
             raise TypeError('signer must implement D2LSigner')
@@ -156,21 +165,26 @@ class D2LAppContext(object):
             self.signer = signer
 
     def __repr__(self):
-        return repr({'app_id': self.app_id, 'app_key': self.app_key, 'signer': repr(self.signer)})
+        return repr({'app_id': self.app_id,
+                     'app_key': self.app_key,
+                     'signer': repr(self.signer)})
 
-    def create_url_for_authentication(self, host, client_app_url,
-                                      connect_type=None, encrypt_request=True):
+    def create_url_for_authentication(self,
+                                      host,
+                                      client_app_url,
+                                      connect_type=None,
+                                      encrypt_request=True):
         """Build a URL that the user's browser can employ to complete the user
         authentication process with the back-end LMS.
 
         :param host:
             Host/port string for the back-end LMS service
-            (i.e. `lms.someUni.edu:443`). To this parameter, this method adds the
-            appropriate API route and parameters for a user-authentication
+            (i.e. `lms.someUni.edu:443`). To this parameter, this method adds
+            the appropriate API route and parameters for a user-authentication
             request.
         :param client_app_url:
-            Client application URL that the back-end service should redirect the
-            user back to after user-authentication.
+            Client application URL that the back-end service should redirect
+            the user back to after user-authentication.
         :param connect_type:
             Provide a type string value of `mobile` to signal to the back-end
             service that the user-context will connect from a mobile device.
@@ -181,13 +195,12 @@ class D2LAppContext(object):
         sig = self.signer.get_hash(self.app_key, client_app_url)
 
         # set up the dictionary for the query parms to add
-        parms_dict = { self.APP_ID:self.app_id,
-                      self.APP_SIG:sig,
-                      self.CALLBACK_URL:client_app_url,
-            }
+        parms_dict = {self.APP_ID: self.app_id,
+                      self.APP_SIG: sig,
+                      self.CALLBACK_URL: client_app_url}
 
         if (connect_type in self.VALID_TYPES):
-            parms_dict[self.TYPE]=connect_type
+            parms_dict[self.TYPE] = connect_type
 
         # the urlunsplit parts needed to build an URL
         scheme = netloc = path = query = fragment = ''
@@ -197,8 +210,8 @@ class D2LAppContext(object):
             scheme = self.SCHEME_U
         netloc = host
         path = self.AUTH_API
-        query = urllib.parse.urlencode(parms_dict,doseq=True)
-        result = urllib.parse.urlunsplit((scheme,netloc,path,query,fragment))
+        query = urllib.parse.urlencode(parms_dict, doseq=True)
+        result = urllib.parse.urlunsplit((scheme, netloc, path, query, fragment))
 
         return result
 
@@ -207,7 +220,8 @@ class D2LAppContext(object):
         Learning Framework API client application.
 
         :param host:
-            Host/port string for the back-end service (i.e. `lms.someUni.edu:443`).
+            Host/port string for the back-end service
+            (i.e. `lms.someUni.edu:443`).
         :param encrypt_requests:
             If true, use HTTPS for requests made through the resulting built
             user context; if false (the default), use HTTP.
@@ -215,15 +229,18 @@ class D2LAppContext(object):
         if host == '':
             raise ValueError('host must have a value when building a new context.')
         pd = {'host': host,
-             'encrypt_requests': encrypt_requests,
-             'user_id': '',
-             'user_key': '',
-             'server_skew': 0 }
+              'encrypt_requests': encrypt_requests,
+              'user_id': '',
+              'user_key': '',
+              'server_skew': 0}
         r = self.create_user_context(d2l_user_context_props_dict=pd)
         return r
 
-    def create_user_context(self, result_uri='', host='', encrypt_requests=False,
-                          d2l_user_context_props_dict={}):
+    def create_user_context(self,
+                            result_uri='',
+                            host='',
+                            encrypt_requests=False,
+                            d2l_user_context_props_dict={}):
         """Build a new authentication LMS-user context for a Valence Learning
         Framework API client application.
 
@@ -231,7 +248,8 @@ class D2LAppContext(object):
             Entire result URI, including quoted parameters, that the back-end
             service redirected the user to after user-authentication.
         :param host:
-            Host/port string for the back-end service (i.e. `lms.someUni.edu:443`).
+            Host/port string for the back-end service
+            (i.e. `lms.someUni.edu:443`).
         :param encrypt_requests:
             If true, use HTTPS for requests made through the resulting built
             user context; if false (the default), use HTTP.
@@ -254,16 +272,15 @@ class D2LAppContext(object):
                                     app_key=self.app_key,
                                     encrypt_requests=t['encrypt_requests'],
                                     server_skew=t['server_skew'],
-                                    signer=self.signer
-                )
-        # If the caller did not provide an existing user context properties dict,
-        # we use the other parms to create a new user context
+                                    signer=self.signer)
+        # If the caller did not provide an existing user context properties
+        # dict, we use the other parms to create a new user context
         else:
             if '' in (result_uri, host):
                 raise ValueError('result_uri and host must have values when building new contexts.')
 
             parts = urllib.parse.urlsplit(result_uri)
-            scheme,netloc,path,query,fragment = parts[:5]
+            scheme, netloc, path, query, fragment = parts[:5]
             parsed_query = urllib.parse.parse_qs(query)
             uID = parsed_query[self.CALLBACK_USER_ID][0]
             uKey = parsed_query[self.CALLBACK_USER_KEY][0]
@@ -274,14 +291,14 @@ class D2LAppContext(object):
                                         app_id=self.app_id,
                                         app_key=self.app_key,
                                         encrypt_requests=encrypt_requests,
-                                        signer=self.signer
-                    )
+                                        signer=self.signer)
 
         return result
 
+
 ##
-## Inherits from AuthBase so that we can use a user context as an AuthBase helper
-## calls made through the Requests package.
+## Inherits from AuthBase so that we can use a user context as an AuthBase
+## helper calls made through the Requests package.
 ##
 class D2LUserContext(AuthBase):
     """Calling user context that a Valence Learning Framework API client
@@ -307,19 +324,21 @@ class D2LUserContext(AuthBase):
         method, or the `fashion_user_context()` factory function.
 
         :param hostName: Host/port string for the back-end service.
-        :param user_id: User ID provided by the back-end service to the authenticated
-        client application.
+        :param user_id: User ID provided by the back-end service to the
+                        authenticated client application.
         :param user_key: User Key provided by the back-end service to the
-        authenticated client application.
+                         authenticated client application.
         :param encrypt_requests: If true, use HTTPS for requests made through
-        this user context; if false (the default), use HTTP.
+                                 this user context; if false (the default), use
+                                 HTTP.
         :param server_skew: Time skew between the service's time and the client
-        application's time, in milliseconds.
+                            application's time, in milliseconds.
         :param signer: A signer instance that implements D2LSigner.
 
-        :raises TypeError: If you provide a signer that doesn't implement `D2LSigner`.
-        :raises ValueError: If you provide `None` for hostName, port, user_id, or
-        user_key parameters.
+        :raises TypeError: If you provide a signer that doesn't implement
+                           `D2LSigner`.
+        :raises ValueError: If you provide `None` for hostName, port, user_id,
+                            or user_key parameters.
         """
         self.signer = None
         self.scheme = self.SCHEME_P
@@ -351,7 +370,7 @@ class D2LUserContext(AuthBase):
             self.signer = signer
 
     # Entrypoint for use by requests.auth.AuthBase callers
-    def __call__(self,r):
+    def __call__(self, r):
         # modify requests.Request `r` to patch in appropriate auth goo
 
         method = scheme = netloc = path = query = fragment = ''
@@ -359,7 +378,7 @@ class D2LUserContext(AuthBase):
         parts = urllib.parse.urlsplit(r.url)
         scheme, netloc, path, query, fragment = parts[:5]
 
-        qparms_dict = urllib.parse.parse_qs( query )
+        qparms_dict = urllib.parse.parse_qs(query)
 
         method = r.method.upper()
         time = self._get_time_string()
@@ -374,14 +393,13 @@ class D2LUserContext(AuthBase):
             usr_sig = self.signer.get_hash(self.user_key, base)
 
         # set up the dictionary for the query parms to add
-        parms_dict = { self.APP_ID: [self.app_id],
-                       self.APP_SIG: [app_sig],
-                       self.USER_ID: [self.user_id],
-                       self.USER_SIG: [usr_sig],
-                       self.TIME: [time]
-            }
+        parms_dict = {self.APP_ID: [self.app_id],
+                      self.APP_SIG: [app_sig],
+                      self.USER_ID: [self.user_id],
+                      self.USER_SIG: [usr_sig],
+                      self.TIME: [time]}
         qparms_dict.update(parms_dict)
-        query = urllib.parse.urlencode(qparms_dict,doseq=True)
+        query = urllib.parse.urlencode(qparms_dict, doseq=True)
 
         r.url = urllib.parse.urlunsplit((scheme, netloc, path, query, fragment))
 
@@ -389,16 +407,19 @@ class D2LUserContext(AuthBase):
 
     def __repr__(self):
         result = self.get_context_properties()
-        result.update( {'signer': repr(self.signer) } )
-        return repr( result )
+        result.update({'signer': repr(self.signer)})
+        return repr(result)
 
     def _get_time_string(self):
         # we must pass back seconds; time.time() returns seconds, server_skew is in millis
-        t = int( round(time.time() + (self.server_skew/1000)) )
+        t = int(round(time.time() + (self.server_skew/1000)))
         return str(t)
 
-    def create_authenticated_url(self, api_route='/d2l/api/versions/', method='GET'):
-        """Create a properly tokenized URL for a new request through this user context.
+    def create_authenticated_url(self,
+                                 api_route='/d2l/api/versions/',
+                                 method='GET'):
+        """Create a properly tokenized URL for a new request through this user
+        context.
 
         :param api_route: API to invoke on the back-end service (get all
         versions route by default).
@@ -419,12 +440,11 @@ class D2LUserContext(AuthBase):
         else:
             usr_sig = self.signer.get_hash(self.user_key, base)
 
-        parms_dict = { self.APP_ID:self.app_id,
-                      self.APP_SIG:app_sig,
-                      self.USER_ID:self.user_id,
-                      self.USER_SIG:usr_sig,
-                      self.TIME:time
-            }
+        parms_dict = {self.APP_ID: self.app_id,
+                      self.APP_SIG: app_sig,
+                      self.USER_ID: self.user_id,
+                      self.USER_SIG: usr_sig,
+                      self.TIME: time}
 
         # the urlunsplit parts needed to build an URL
         scheme = netloc = path = query = fragment = ''
@@ -435,7 +455,7 @@ class D2LUserContext(AuthBase):
         netloc = self.host
         path = api_route
         query = urllib.parse.urlencode(parms_dict)
-        result = urllib.parse.urlunsplit((scheme,netloc,path,query,fragment))
+        result = urllib.parse.urlunsplit((scheme, netloc, path, query, fragment))
 
         return result
 
@@ -474,13 +494,12 @@ class D2LUserContext(AuthBase):
         """Retrieve a dictionary of this calling user context's current state,
         suitable for rebuilding this user context at a later time.
         """
-        cp = { 'host':self.host,
-               'user_id':self.user_id,
-               'user_key':self.user_key,
-               'encrypt_requests':self.encrypt_requests,
-               'server_skew':self.server_skew,
-               'anonymous':self.anonymous
-            }
+        cp = {'host': self.host,
+              'user_id': self.user_id,
+              'user_key': self.user_key,
+              'encrypt_requests': self.encrypt_requests,
+              'server_skew': self.server_skew,
+              'anonymous': self.anonymous}
         return cp
 
     def set_new_skew(self, new_skew):

@@ -3,6 +3,13 @@
 History
 -------
 
+1.0.1 (2013-11-12)
+++++++++++++++++++
+* PEP8-iyied the code; left some long lines for clarity, though.
+
+* Cleaned up README contents.
+
+
 1.0.0 (2013-10-01)
 ++++++++++++++++++
 * Split away d2lvalence.data and d2lvalence.service from the auth
