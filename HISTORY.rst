@@ -5,7 +5,7 @@ History
 
 1.0.1 (2013-11-12)
 ++++++++++++++++++
-* PEP8-iyied the code; left some long lines for clarity, though.
+* PEP8-ified the code; left some long lines for clarity, though.
 
 * Cleaned up README contents.
 
