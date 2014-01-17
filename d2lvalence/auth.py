@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # D2LValence package, auth module.
 #
-# Copyright (c) 2012 Desire2Learn Inc.
+# Copyright (c) 2012-2014 Desire2Learn Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -372,37 +372,10 @@ class D2LUserContext(AuthBase):
     # Entrypoint for use by requests.auth.AuthBase callers
     def __call__(self, r):
         # modify requests.Request `r` to patch in appropriate auth goo
-
-        method = scheme = netloc = path = query = fragment = ''
-
-        parts = urllib.parse.urlsplit(r.url)
-        scheme, netloc, path, query, fragment = parts[:5]
-
-        qparms_dict = urllib.parse.parse_qs(query)
-
-        method = r.method.upper()
-        time = self._get_time_string()
-        # return path to its original, un-URL quoted state
-        bs_path = urllib.parse.unquote_plus(path.lower())
-        base = '{0}&{1}&{2}'.format(method, bs_path, time)
-
-        app_sig = self.signer.get_hash(self.app_key, base)
-        if self.anonymous:
-            usr_sig = ''
-        else:
-            usr_sig = self.signer.get_hash(self.user_key, base)
-
-        # set up the dictionary for the query parms to add
-        parms_dict = {self.APP_ID: [self.app_id],
-                      self.APP_SIG: [app_sig],
-                      self.USER_ID: [self.user_id],
-                      self.USER_SIG: [usr_sig],
-                      self.TIME: [time]}
-        qparms_dict.update(parms_dict)
-        query = urllib.parse.urlencode(qparms_dict, doseq=True)
-
-        r.url = urllib.parse.urlunsplit((scheme, netloc, path, query, fragment))
-
+        decorated_url = self.decorate_url_with_authentication(
+                               r.url,
+                               method = r.method.upper())
+        r.url = decorated_url
         return r
 
     def __repr__(self):
@@ -415,6 +388,49 @@ class D2LUserContext(AuthBase):
         t = int(round(time.time() + (self.server_skew/1000)))
         return str(t)
 
+    def _build_tokens_for_path(self, path, method='GET'):
+        time = self._get_time_string()
+        bs_path = urllib.parse.unquote_plus(path.lower())
+        base = '{0}&{1}&{2}'.format(method.upper(), bs_path, time)
+
+        app_sig = self.signer.get_hash(self.app_key, base)
+        if self.anonymous:
+            user_sig = ''
+        else:
+            user_sig = self.signer.get_hash(self.user_key, base)
+
+        # return dictionary containing the auth token parameters
+        return {self.APP_ID: [self.app_id],
+                self.APP_SIG: [app_sig],
+                self.USER_ID: [self.user_id],
+                self.USER_SIG: [user_sig],
+                self.TIME: [time]}
+
+    def decorate_url_with_authentication(self,
+                                         url,
+                                         method='GET'):
+        """
+        Create a properly tokenized URL for a new request through this user
+        context, starting from a full URL.
+
+        :param url: Full URL to call on the back-end service; no default value.
+        :param method: Method for the request (GET by default, POST, etc).
+
+        :returns: URL you can use for an HTTP request, containing the
+        time-limited authentication token parameters needed for a Valence API
+        call.
+        """
+        scheme = netloc = path = query = fragment = ''
+
+        parts = urllib.parse.urlsplit(url)
+        scheme, netloc, path, query, fragment = parts[:5]
+        qparms_dict = urllib.parse.parse_qs(query)
+
+        qparms_dict.update(self._build_tokens_for_path(path, method=method))
+        query = urllib.parse.urlencode(qparms_dict, doseq=True)
+
+        return urllib.parse.urlunsplit((scheme, netloc, path, query, fragment))
+    
     def create_authenticated_url(self,
                                  api_route='/d2l/api/versions/',
                                  method='GET'):
@@ -429,35 +445,20 @@ class D2LUserContext(AuthBase):
         the time-limited authentication token parameters needed for a Valence
         API call.
         """
-        time = self._get_time_string()
-        # return path to its original, un-URL quoted state
-        bs_path = urllib.parse.unquote_plus(api_route.lower())
-        base = '{0}&{1}&{2}'.format(method.upper(), bs_path, time)
-
-        app_sig = self.signer.get_hash(self.app_key, base)
-        if self.anonymous:
-            usr_sig = ''
-        else:
-            usr_sig = self.signer.get_hash(self.user_key, base)
-
-        parms_dict = {self.APP_ID: self.app_id,
-                      self.APP_SIG: app_sig,
-                      self.USER_ID: self.user_id,
-                      self.USER_SIG: usr_sig,
-                      self.TIME: time}
-
         # the urlunsplit parts needed to build an URL
         scheme = netloc = path = query = fragment = ''
+        scheme = self.SCHEME_P
         if self.encrypt_requests:
             scheme = self.SCHEME_S
-        else:
-            scheme = self.SCHEME_P
         netloc = self.host
         path = api_route
-        query = urllib.parse.urlencode(parms_dict)
-        result = urllib.parse.urlunsplit((scheme, netloc, path, query, fragment))
 
-        return result
+        query = urllib.parse.urlencode(self._build_tokens_for_path(
+                                             path,
+                                             method=method),
+                                       doseq=True)
+
+        return urllib.parse.urlunsplit((scheme, netloc, path, query, fragment))
 
     # Currently, this function does very little, and is present mostly for
     # symmetry with the other Valence client library packages.

@@ -3,6 +3,14 @@
 History
 -------
 
+1.1.0 (2013-11-18)
+++++++++++++++++++
+* Added `D2LUserContext.decorate_url_with_authentication()` to accept an entire URL
+  and generate Valence authentication tokens for it; re-factor D2LUserContext
+  to pull out the token generation code into an internal method
+  (`_build_tokens_for_path()`).
+
+
 1.0.1 (2013-11-12)
 ++++++++++++++++++
 * PEP8-ified the code; left some long lines for clarity, though.

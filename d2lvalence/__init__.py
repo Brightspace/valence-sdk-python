@@ -10,8 +10,8 @@
 """
 
 __title__ = 'd2lvalence'
-__version__ = '1.0.1'
-__build__ = 0x010001
+__version__ = '1.1.0'
+__build__ = 0x010100
 __author__ = 'Desire2Learn Extensibility'
 __license__ = 'Apache 2.0'
-__copyright__ = 'Copyright 2013 Desire2Learn Incorporated.'
+__copyright__ = 'Copyright 2012-2014 Desire2Learn Incorporated.'
