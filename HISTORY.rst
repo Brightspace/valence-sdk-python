@@ -3,6 +3,14 @@
 History
 -------
 
+1.1.1 (2014-05-26)
+++++++++++++++++++
+* Added some validation around user context method accepting API routes to
+  tokenize, to catch passing invalid characters for URL paths.
+
+* Updated package requirements to signal support for Python 3.4.
+
+
 1.1.0 (2013-11-18)
 ++++++++++++++++++
 * Added `D2LUserContext.decorate_url_with_authentication()` to accept an entire URL

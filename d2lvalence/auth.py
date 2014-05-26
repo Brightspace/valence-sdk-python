@@ -32,6 +32,7 @@ import urllib.parse
 
 # For use with D2LUserContext
 import time
+import re
 from requests.auth import AuthBase
 
 
@@ -369,6 +370,8 @@ class D2LUserContext(AuthBase):
         else:
             self.signer = signer
 
+        self.invalid_path_chars = re.compile("[^a-zA-Z0-9-_~!&,;=:@.$*+()'/%]+")
+
     # Entrypoint for use by requests.auth.AuthBase callers
     def __call__(self, r):
         # modify requests.Request `r` to patch in appropriate auth goo
@@ -389,6 +392,8 @@ class D2LUserContext(AuthBase):
         return str(t)
 
     def _build_tokens_for_path(self, path, method='GET'):
+        if self.invalid_path_chars.search(path):
+            raise ValueError("path contains invalid characters for URL path")
         time = self._get_time_string()
         bs_path = urllib.parse.unquote_plus(path.lower())
         base = '{0}&{1}&{2}'.format(method.upper(), bs_path, time)
@@ -437,7 +442,7 @@ class D2LUserContext(AuthBase):
         """Create a properly tokenized URL for a new request through this user
         context.
 
-        :param api_route: API to invoke on the back-end service (get all
+        :param api_route: API route to invoke on the back-end service (get all
         versions route by default).
         :param method: Method for the request (GET by default, POST, etc).
 
