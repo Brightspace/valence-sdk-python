@@ -24,7 +24,7 @@ if sys.argv[-1] == 'publish':
 packages = ['d2lvalence', ]
 
 # We depend on Kenneth Reitz' requests package to handle the actual HTTP traffic
-requires = ['requests >= 1.2.0', ]
+requires = ['requests >= 1.2.0', 'six>=1.9.0' ]
 
 setup(
     name='D2LValence',
