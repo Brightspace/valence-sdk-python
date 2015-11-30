@@ -28,7 +28,8 @@ import hashlib
 import hmac
 
 # For use with D2LAppContext and D2LUserContext
-import urllib.parse
+import urllib
+import urlparse
 
 # For use with D2LUserContext
 import time
@@ -211,8 +212,8 @@ class D2LAppContext(object):
             scheme = self.SCHEME_U
         netloc = host
         path = self.AUTH_API
-        query = urllib.parse.urlencode(parms_dict, doseq=True)
-        result = urllib.parse.urlunsplit((scheme, netloc, path, query, fragment))
+        query = urllib.urlencode(parms_dict, doseq=True)
+        result = urlparse.urlunsplit((scheme, netloc, path, query, fragment))
 
         return result
 
@@ -280,9 +281,9 @@ class D2LAppContext(object):
             if '' in (result_uri, host):
                 raise ValueError('result_uri and host must have values when building new contexts.')
 
-            parts = urllib.parse.urlsplit(result_uri)
+            parts = urlparse.urlsplit(result_uri)
             scheme, netloc, path, query, fragment = parts[:5]
-            parsed_query = urllib.parse.parse_qs(query)
+            parsed_query = urlparse.parse_qs(query)
             uID = parsed_query[self.CALLBACK_USER_ID][0]
             uKey = parsed_query[self.CALLBACK_USER_KEY][0]
             if uID and uKey:
@@ -395,7 +396,7 @@ class D2LUserContext(AuthBase):
         if self.invalid_path_chars.search(path):
             raise ValueError("path contains invalid characters for URL path")
         time = self._get_time_string()
-        bs_path = urllib.parse.unquote_plus(path.lower())
+        bs_path = urllib.unquote_plus(path.lower())
         base = '{0}&{1}&{2}'.format(method.upper(), bs_path, time)
 
         app_sig = self.signer.get_hash(self.app_key, base)
@@ -427,14 +428,14 @@ class D2LUserContext(AuthBase):
         """
         scheme = netloc = path = query = fragment = ''
 
-        parts = urllib.parse.urlsplit(url)
+        parts = urlparse.urlsplit(url)
         scheme, netloc, path, query, fragment = parts[:5]
-        qparms_dict = urllib.parse.parse_qs(query)
+        qparms_dict = urlparse.parse_qs(query)
 
         qparms_dict.update(self._build_tokens_for_path(path, method=method))
-        query = urllib.parse.urlencode(qparms_dict, doseq=True)
+        query = urllib.urlencode(qparms_dict, doseq=True)
 
-        return urllib.parse.urlunsplit((scheme, netloc, path, query, fragment))
+        return urlparse.urlunsplit((scheme, netloc, path, query, fragment))
     
     def create_authenticated_url(self,
                                  api_route='/d2l/api/versions/',
@@ -458,12 +459,12 @@ class D2LUserContext(AuthBase):
         netloc = self.host
         path = api_route
 
-        query = urllib.parse.urlencode(self._build_tokens_for_path(
+        query = urllib.urlencode(self._build_tokens_for_path(
                                              path,
                                              method=method),
                                        doseq=True)
 
-        return urllib.parse.urlunsplit((scheme, netloc, path, query, fragment))
+        return urlparse.urlunsplit((scheme, netloc, path, query, fragment))
 
     # Currently, this function does very little, and is present mostly for
     # symmetry with the other Valence client library packages.
@@ -515,3 +516,4 @@ class D2LUserContext(AuthBase):
         :param newSkewMillis: New server time-skew value, in milliseconds.
         """
         self.server_skew = new_skew
+
