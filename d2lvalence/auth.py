@@ -28,7 +28,8 @@ import hashlib
 import hmac
 
 # For use with D2LAppContext and D2LUserContext
-import urllib.parse
+# import urllib.parse
+from six.moves import urllib
 
 # For use with D2LUserContext
 import time
