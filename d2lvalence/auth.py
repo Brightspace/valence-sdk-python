@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # D2LValence package, auth module.
 #
-# Copyright (c) 2012-2014 Desire2Learn Inc.
+# Copyright (c) 2012-2016 Desire2Learn Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,11 @@
 :synopsis: Provides auth assistance for Desire2Learn's Valence API client
            applications.
 """
+from __future__ import (absolute_import, division, print_function, unicode_literals)
+from future.standard_library import install_aliases
+install_aliases()
+from builtins import *
+
 
 ### Authentication ###
 # For use with D2LSigner
@@ -60,6 +65,17 @@ def fashion_user_context(app_id='',
     ac = fashion_app_context(app_id=app_id, app_key=app_key)
     return ac.create_user_context(
         d2l_user_context_props_dict=d2l_user_context_props_dict)
+
+# internal helper function that helps cope with newstr normalizing for
+# use of future with urllib.parse.unsplit()
+def _stringify_components(l):
+    l2 = []
+    for i in l:
+        if not isinstance(i,str):
+            l2.append(str(i))
+        else:
+            l2.append(i)
+    return tuple(l2)
 
 
 # classes
@@ -211,8 +227,10 @@ class D2LAppContext(object):
             scheme = self.SCHEME_U
         netloc = host
         path = self.AUTH_API
+
         query = urllib.parse.urlencode(parms_dict, doseq=True)
-        result = urllib.parse.urlunsplit((scheme, netloc, path, query, fragment))
+        components = _stringify_components((scheme, netloc, path, query, fragment))
+        result = urllib.parse.urlunsplit(components)
 
         return result
 
@@ -433,8 +451,9 @@ class D2LUserContext(AuthBase):
 
         qparms_dict.update(self._build_tokens_for_path(path, method=method))
         query = urllib.parse.urlencode(qparms_dict, doseq=True)
+        components = _stringify_components((scheme, netloc, path, query, fragment))
 
-        return urllib.parse.urlunsplit((scheme, netloc, path, query, fragment))
+        return urllib.parse.urlunsplit(components)
     
     def create_authenticated_url(self,
                                  api_route='/d2l/api/versions/',
@@ -462,8 +481,9 @@ class D2LUserContext(AuthBase):
                                              path,
                                              method=method),
                                        doseq=True)
+        components = _stringify_components((scheme, netloc, path, query, fragment))
 
-        return urllib.parse.urlunsplit((scheme, netloc, path, query, fragment))
+        return urllib.parse.urlunsplit(components)
 
     # Currently, this function does very little, and is present mostly for
     # symmetry with the other Valence client library packages.

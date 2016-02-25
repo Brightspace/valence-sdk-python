@@ -3,6 +3,12 @@
 History
 -------
 
+1.2.0 (2016-02-25)
+++++++++++++++++++
+* Update package to use the `python-future <http://python-future.org/index.html>`
+  library to add Python 2 compatibility.
+
+
 1.1.1 (2014-05-26)
 ++++++++++++++++++
 * Added some validation around user context method accepting API routes to
