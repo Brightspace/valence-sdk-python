@@ -3,6 +3,12 @@
 History
 -------
 
+1.2.1 (2016-02-25)
+++++++++++++++++++
+* Roll to 1.2.1 to cope with PyPi not allowing re-use of a release filename
+  that's been deleted.
+
+
 1.2.0 (2016-02-25)
 ++++++++++++++++++
 * Update package to use the `python-future <http://python-future.org/index.html>`
