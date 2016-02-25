@@ -20,6 +20,11 @@
 :synopsis: Provides auth assistance for Desire2Learn's Valence API client
            applications.
 """
+from __future__ import (absolute_import, division, print_function, unicode_literals)
+from future.standard_library import install_aliases
+install_aliases()
+from builtins import *
+
 
 ### Authentication ###
 # For use with D2LSigner

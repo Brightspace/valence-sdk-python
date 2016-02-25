@@ -8,10 +8,14 @@
 :see: http://www.desire2learn.com/r/valencehome for more information about the
       Valence project.
 """
+from __future__ import (absolute_import, division, print_function, unicode_literals)
+from future.standard_library import install_aliases
+install_aliases()
+from builtins import *
 
 __title__ = 'd2lvalence'
-__version__ = '1.1.1'
-__build__ = 0x010101
+__version__ = '1.2.0'
+__build__ = 0x010200
 __author__ = 'Desire2Learn Extensibility'
 __license__ = 'Apache 2.0'
-__copyright__ = 'Copyright 2012-2014 Desire2Learn Incorporated.'
+__copyright__ = 'Copyright 2012-2016 Desire2Learn Incorporated.'
