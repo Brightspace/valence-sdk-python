@@ -66,6 +66,17 @@ def fashion_user_context(app_id='',
     return ac.create_user_context(
         d2l_user_context_props_dict=d2l_user_context_props_dict)
 
+# internal helper function that helps cope with newstr normalizing for
+# use of future with urllib.parse.unsplit()
+def _stringify_components(l):
+    l2 = []
+    for i in l:
+        if not isinstance(i,str):
+            l2.append(str(i))
+        else:
+            l2.append(i)
+    return tuple(l2)
+
 
 # classes
 class D2LSigner(object):
@@ -216,8 +227,10 @@ class D2LAppContext(object):
             scheme = self.SCHEME_U
         netloc = host
         path = self.AUTH_API
+
         query = urllib.parse.urlencode(parms_dict, doseq=True)
-        result = urllib.parse.urlunsplit((scheme, netloc, path, query, fragment))
+        components = _stringify_components((scheme, netloc, path, query, fragment))
+        result = urllib.parse.urlunsplit(components)
 
         return result
 
@@ -438,8 +451,9 @@ class D2LUserContext(AuthBase):
 
         qparms_dict.update(self._build_tokens_for_path(path, method=method))
         query = urllib.parse.urlencode(qparms_dict, doseq=True)
+        components = _stringify_components((scheme, netloc, path, query, fragment))
 
-        return urllib.parse.urlunsplit((scheme, netloc, path, query, fragment))
+        return urllib.parse.urlunsplit(components)
     
     def create_authenticated_url(self,
                                  api_route='/d2l/api/versions/',
@@ -467,8 +481,9 @@ class D2LUserContext(AuthBase):
                                              path,
                                              method=method),
                                        doseq=True)
+        components = _stringify_components((scheme, netloc, path, query, fragment))
 
-        return urllib.parse.urlunsplit((scheme, netloc, path, query, fragment))
+        return urllib.parse.urlunsplit(components)
 
     # Currently, this function does very little, and is present mostly for
     # symmetry with the other Valence client library packages.
