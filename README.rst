@@ -26,7 +26,7 @@ You can find the source for our Python client library SDK in two locations:
 first ensure you have a working Python development environment:
 
 * Python 3 (the reference environment uses Python 3.5), or Python 2.7 (via the
-  use of the future library.
+  use of the future library).
 
 * The `Requests Python package <http://docs.python-requests.org/en/latest/index.html>`_
   gets included in our :py:mod:`auth <d2lvalence.auth>` module so that you can use a
