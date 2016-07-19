@@ -14,8 +14,8 @@ install_aliases()
 from builtins import *
 
 __title__ = 'd2lvalence'
-__version__ = '1.2.1'
-__build__ = 0x010201
+__version__ = '1.2.2'
+__build__ = 0x010202
 __author__ = 'Desire2Learn Extensibility'
 __license__ = 'Apache 2.0'
 __copyright__ = 'Copyright 2012-2016 Desire2Learn Incorporated.'

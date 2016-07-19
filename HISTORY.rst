@@ -3,6 +3,17 @@
 History
 -------
 
+1.2.2 (2016-07-19)
+++++++++++++++++++
+* Update UserContext.decorate_url_with_authentication() to be a bit more canny
+  about the input it gets: if it gets an APIURL with no scheme or netloc, then
+  it will attempt to provide those values, taking them from the user context's
+  internal state (it already knows the scheme and host it should use for
+  decorating routes, to it assumes that it should use those for APIURLs that
+  don't have them -- this is a reasonable, but also potentially fragile,
+  assumption).
+  
+
 1.2.1 (2016-02-25)
 ++++++++++++++++++
 * Roll to 1.2.1 to cope with PyPi not allowing re-use of a release filename

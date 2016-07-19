@@ -447,6 +447,10 @@ class D2LUserContext(AuthBase):
 
         parts = urllib.parse.urlsplit(url)
         scheme, netloc, path, query, fragment = parts[:5]
+        if not scheme:
+            scheme = self.scheme
+        if not netloc:
+            netloc = self.host
         qparms_dict = urllib.parse.parse_qs(query)
 
         qparms_dict.update(self._build_tokens_for_path(path, method=method))
